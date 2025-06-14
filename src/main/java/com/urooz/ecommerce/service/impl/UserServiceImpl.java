@@ -6,6 +6,7 @@ import com.urooz.ecommerce.repository.UserRepository;
 import com.urooz.ecommerce.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -18,6 +19,8 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Override
     public User registerUser(UserRequest request) {
@@ -28,7 +31,7 @@ public class UserServiceImpl implements UserService {
         User user = User.builder()
                 .name(request.getName())
                 .email(request.getEmail())
-                .password(request.getPassword())
+                .password(passwordEncoder.encode(request.getPassword()))
                 .phone(request.getPhone())
                 .role(request.getRole())
                 .createdAt(new Date())
@@ -44,7 +47,7 @@ public class UserServiceImpl implements UserService {
 
         if (userOpt.isPresent()) {
             User user = userOpt.get();
-            if (user.getPassword().equals(request.getPassword())) {
+            if (passwordEncoder.matches(request.getPassword(), user.getPassword())) {
                 return user;
             }
         }
